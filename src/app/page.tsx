@@ -48,6 +48,14 @@ export default function Home() {
     }
   };
 
+  // すべてのメモを削除する関数
+  const handleDeleteAllMemos = () => {
+    if (window.confirm("本当にすべてのメモを削除しますか？この操作は取り消せません。")) {
+      setMemos([]);
+      setActiveMemoId(null);
+    }
+  };
+
   // アクティブなメモの内容が変更されたときにmemos配列を更新する関数
   const handleMemoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -97,6 +105,15 @@ export default function Home() {
             ))}
           </ul>
         </div>
+
+        {memos.length > 0 && (
+          <button
+            onClick={handleDeleteAllMemos}
+            className="w-full bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-800 mt-4"
+          >
+            すべてのメモを削除
+          </button>
+        )}
       </aside>
 
       {/* メインコンテンツ */}

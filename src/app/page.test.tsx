@@ -62,7 +62,7 @@ describe('Home Component', () => {
     expect(screen.getAllByText('新しいメモ')[1]).toBeInTheDocument();
 
     // 2. Delete the memo
-    const deleteButton = screen.getByRole('button', { name: /削除/ });
+    const deleteButton = screen.getByRole('button', { name: '削除' });
     fireEvent.click(deleteButton);
 
     // Ensure the memo is deleted and the initial message is back
@@ -91,5 +91,34 @@ describe('Home Component', () => {
 
     // Check if the title in the sidebar is also updated
     expect(screen.getByText('Updated Title')).toBeInTheDocument();
+  });
+
+  test('deletes all memos when "すべてのメモを削除" button is clicked', () => {
+    // Mock window.confirm
+    const confirmSpy = jest.spyOn(window, 'confirm');
+    confirmSpy.mockImplementation(() => true);
+
+    render(<Home />);
+
+    // 1. Create two memos
+    const newMemoButton = screen.getByRole('button', { name: /新しいメモ/ });
+    fireEvent.click(newMemoButton);
+    fireEvent.click(newMemoButton);
+
+    // Ensure memos are created (we'll have multiple '新しいメモ' texts)
+    expect(screen.getAllByText('新しいメモ').length).toBeGreaterThan(2);
+
+    // 2. Click the delete all button
+    const deleteAllButton = screen.getByRole('button', { name: /すべてのメモを削除/ });
+    fireEvent.click(deleteAllButton);
+
+    // 3. Assertions
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(screen.queryByText('新しいメモ', { selector: 'span' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /すべてのメモを削除/ })).not.toBeInTheDocument();
+    expect(screen.getByText('メモを選択するか、新しいメモを作成してください。')).toBeInTheDocument();
+
+    // Clean up spy
+    confirmSpy.mockRestore();
   });
 });
