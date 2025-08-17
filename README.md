@@ -1,6 +1,6 @@
 # メモ帳アプリ
 
-[**デプロイ先のURLはこちら**](https://memo-app-six-rho.vercel.app/)
+[**デプロイ先のURLはこちら**](https://memo-app-one-teal.vercel.app/)
 
 ブラウザのローカルストレージを使用して、メモを永続的に保存することができるシンプルなメモ帳アプリケーションです。
 
