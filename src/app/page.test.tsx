@@ -122,7 +122,10 @@ describe('Home Component', () => {
     confirmSpy.mockRestore();
   });
 
-  test('saves active memo to a file when "メモを保存" button is clicked', () => {
+  test('saves active memo to a file when "メモを保存" button is clicked', async () => {
+    const now = Date.now();
+    vi.setSystemTime(now);
+
     // Mock URL methods on window.URL
     Object.defineProperty(window.URL, 'createObjectURL', {
       writable: true,
@@ -151,8 +154,19 @@ describe('Home Component', () => {
       return originalCreateElement.call(document, tagName); // Call original for other tags
     });
 
+    // Mock Blob constructor
+    const originalBlob = window.Blob;
+    const BlobSpy = vi.spyOn(window, 'Blob').mockImplementation(function(content, options) {
+      const realBlobInstance = new originalBlob(content, options);
+      Object.defineProperty(realBlobInstance, 'text', {
+        writable: true,
+        value: () => Promise.resolve(content[0]),
+      });
+      return realBlobInstance;
+    });
 
-    render(<Home />);
+
+    render(<Home />); // Only one render call
 
     // 1. Create a new memo and set its content
     const newMemoButton = screen.getByRole('button', { name: /新しいメモ/ });
@@ -170,11 +184,23 @@ describe('Home Component', () => {
 
     // 3. Assertions
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(createObjectURLSpy).toHaveBeenCalledWith(expect.any(Blob));
 
-    // Verify Blob content (optional, but good for robustness)
-    const blobArg = createObjectURLSpy.mock.calls[0][0];
-    expect(blobArg.type).toBe('text/plain;charset=utf-8');
+    // Verify Blob constructor arguments
+    expect(BlobSpy).toHaveBeenCalledTimes(1);
+    const blobContentArg = BlobSpy.mock.calls[0][0][0]; // First arg of Blob constructor, first element of array
+    const blobOptionsArg = BlobSpy.mock.calls[0][1]; // Second arg of Blob constructor
+
+    const createdDate = new Date(now).toLocaleString();
+    const updatedDate = new Date(now).toLocaleString();
+    const expectedContent = `タイトル: Test Memo Title
+作成日: ${createdDate}
+更新日: ${updatedDate}
+
+This is the content of the test memo.`;
+
+    expect(blobContentArg).toBe(expectedContent);
+    expect(blobOptionsArg).toEqual({ type: 'text/plain;charset=utf-8' });
+
 
     // Assertions for anchor element creation and download
     expect(createElementSpy).toHaveBeenCalledWith('a');
@@ -190,6 +216,9 @@ describe('Home Component', () => {
     revokeObjectURLSpy.mockRestore();
     createElementSpy.mockRestore();
     HTMLAnchorElement.prototype.click = originalAnchorClick; // Restore original click method
+    BlobSpy.mockRestore(); // Restore Blob constructor
+    window.Blob = originalBlob; // Restore original Blob constructor
+    vi.useRealTimers(); // Restore real timers
   });
 
   test('sets createdAt and updatedAt on new memo creation', () => {

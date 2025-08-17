@@ -77,7 +77,9 @@ export default function Home() {
     if (!activeMemo) return; // アクティブなメモがない場合は何もしない
 
     const filename = `${activeMemo.title || "無題のメモ"}.txt`;
-    const content = `タイトル: ${activeMemo.title || "無題のメモ"}\n\n${activeMemo.content}`;
+    const createdDate = new Date(activeMemo.createdAt).toLocaleString();
+    const updatedDate = new Date(activeMemo.updatedAt).toLocaleString();
+    const content = `タイトル: ${activeMemo.title || "無題のメモ"}\n作成日: ${createdDate}\n更新日: ${updatedDate}\n\n${activeMemo.content}`;
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
