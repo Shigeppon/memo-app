@@ -191,4 +191,50 @@ describe('Home Component', () => {
     createElementSpy.mockRestore();
     HTMLAnchorElement.prototype.click = originalAnchorClick; // Restore original click method
   });
+
+  test('sets createdAt and updatedAt on new memo creation', () => {
+    const now = Date.now();
+    vi.setSystemTime(now);
+
+    render(<Home />);
+
+    const newMemoButton = screen.getByRole('button', { name: /新しいメモ/ });
+    fireEvent.click(newMemoButton);
+
+    // Check if the dates are displayed
+    const createdAtText = new Date(now).toLocaleString();
+    const updatedAtText = new Date(now).toLocaleString();
+
+    expect(screen.getByText(`作成日: ${createdAtText}`)).toBeInTheDocument();
+    expect(screen.getByText(`更新日: ${updatedAtText}`)).toBeInTheDocument();
+
+    vi.useRealTimers(); // Restore real timers
+  });
+
+  test('updates updatedAt when memo content changes', async () => {
+    const initialTime = Date.now();
+    vi.setSystemTime(initialTime);
+
+    render(<Home />);
+
+    const newMemoButton = screen.getByRole('button', { name: /新しいメモ/ });
+    fireEvent.click(newMemoButton);
+
+    const initialUpdatedAtText = screen.getByText(/更新日:/).textContent;
+
+    // Advance time
+    const updatedTime = initialTime + 5000; // 5 seconds later
+    vi.setSystemTime(updatedTime);
+
+    // Change memo content
+    const contentTextarea = screen.getByPlaceholderText('ここにメモを入力してください..') as HTMLTextAreaElement;
+    fireEvent.change(contentTextarea, { target: { value: 'Updated content.' } });
+
+    // Check if updatedAt has changed
+    const newUpdatedAtText = new Date(updatedTime).toLocaleString();
+    expect(screen.getByText(`更新日: ${newUpdatedAtText}`)).toBeInTheDocument();
+    expect(screen.getByText(`更新日: ${newUpdatedAtText}`).textContent).not.toBe(initialUpdatedAtText);
+
+    vi.useRealTimers(); // Restore real timers
+  });
 });
