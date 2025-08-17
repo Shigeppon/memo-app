@@ -58,7 +58,7 @@ export default function Home() {
       )
     );
   };
-  
+
   // 表示するアクティブなメモを取得
   const activeMemo = memos.find((memo) => memo.id === activeMemoId);
 
@@ -77,9 +77,8 @@ export default function Home() {
             {memos.map((memo) => (
               <li
                 key={memo.id}
-                className={`p-2 rounded cursor-pointer mb-2 ${
-                  memo.id === activeMemoId ? "bg-blue-100" : "hover:bg-gray-200"
-                }`}
+                className={`p-2 rounded cursor-pointer mb-2 ${memo.id === activeMemoId ? "bg-blue-100" : "hover:bg-gray-200"
+                  }`}
                 onClick={() => setActiveMemoId(memo.id)}
               >
                 <div className="flex justify-between items-center">
@@ -116,7 +115,7 @@ export default function Home() {
               name="content"
               value={activeMemo.content}
               onChange={handleMemoChange}
-              placeholder="ここにメモを入力..."
+              placeholder="ここにメモを入力してください.."
               className="flex-grow p-4 border border-gray-300 rounded text-black"
             />
           </div>
