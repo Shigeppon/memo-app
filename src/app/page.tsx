@@ -7,6 +7,8 @@ interface Memo {
   id: string;
   title: string;
   content: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export default function Home() {
@@ -31,10 +33,13 @@ export default function Home() {
 
   // 新しいメモを作成する関数
   const handleNewMemo = () => {
+    const now = Date.now();
     const newMemo: Memo = {
-      id: Date.now().toString(),
+      id: now.toString(),
       title: "新しいメモ",
       content: "",
+      createdAt: now,
+      updatedAt: now,
     };
     setMemos([newMemo, ...memos]);
     setActiveMemoId(newMemo.id);
@@ -62,7 +67,7 @@ export default function Home() {
 
     setMemos(
       memos.map((memo) =>
-        memo.id === activeMemoId ? { ...memo, [name]: value } : memo
+        memo.id === activeMemoId ? { ...memo, [name]: value, updatedAt: Date.now() } : memo
       )
     );
   };
@@ -72,7 +77,9 @@ export default function Home() {
     if (!activeMemo) return; // アクティブなメモがない場合は何もしない
 
     const filename = `${activeMemo.title || "無題のメモ"}.txt`;
-    const content = `タイトル: ${activeMemo.title || "無題のメモ"}\n\n${activeMemo.content}`;
+    const createdDate = new Date(activeMemo.createdAt).toLocaleString();
+    const updatedDate = new Date(activeMemo.updatedAt).toLocaleString();
+    const content = `タイトル: ${activeMemo.title || "無題のメモ"}\n作成日: ${createdDate}\n更新日: ${updatedDate}\n\n${activeMemo.content}`;
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
@@ -123,7 +130,13 @@ export default function Home() {
                 onClick={() => setActiveMemoId(memo.id)}
               >
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold truncate">{memo.title || "無題のメモ"}</span>
+                  <div className="flex flex-col"> {/* New div for stacking title and dates */}
+                    <span className="font-semibold truncate">{memo.title || "無題のメモ"}</span>
+                    <div className="text-xs text-gray-500 mt-1">
+                      <p>作成日: {new Date(memo.createdAt).toLocaleString()}</p>
+                      <p>更新日: {new Date(memo.updatedAt).toLocaleString()}</p>
+                    </div>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // 親要素のonClickイベントを発火させない
