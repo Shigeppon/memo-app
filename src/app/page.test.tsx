@@ -1,7 +1,7 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import Home from '../app/page';
-import '@testing-library/jest-dom';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -95,7 +95,7 @@ describe('Home Component', () => {
 
   test('deletes all memos when "すべてのメモを削除" button is clicked', () => {
     // Mock window.confirm
-    const confirmSpy = jest.spyOn(window, 'confirm');
+    const confirmSpy = vi.spyOn(window, 'confirm');
     confirmSpy.mockImplementation(() => true);
 
     render(<Home />);
