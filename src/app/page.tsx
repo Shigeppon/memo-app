@@ -89,17 +89,33 @@ export default function Home() {
   const activeMemo = memos.find((memo) => memo.id === activeMemoId);
 
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-800">
-      {/* サイドバー */}
-      <aside className="w-64 bg-white p-4 border-r border-gray-200 flex flex-col">
-        <button
-          onClick={handleNewMemo}
-          className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 mb-4"
-        >
-          新しいメモ
-        </button>
-        <div className="flex-grow overflow-y-auto">
-          <ul>
+    <div className="flex flex-col h-screen bg-gray-100 text-gray-800">
+      {/* ヘッダー */}
+      <header className="flex justify-between items-center p-4 bg-gray-800 text-white">
+        <h1 className="text-2xl font-bold">メモアプリ</h1>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleNewMemo}
+            className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+          >
+            新しいメモ
+          </button>
+          {memos.length > 0 && (
+            <button
+              onClick={handleDeleteAllMemos}
+              className="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-800"
+            >
+              すべてのメモを削除
+            </button>
+          )}
+        </div>
+      </header>
+
+      <div className="flex flex-grow">
+        {/* サイドバー */}
+        <aside className="w-64 bg-white p-4 border-r border-gray-200 flex flex-col">
+          <div className="flex-grow overflow-y-auto">
+            <ul>
             {memos.map((memo) => (
               <li
                 key={memo.id}
@@ -122,15 +138,6 @@ export default function Home() {
             ))}
           </ul>
         </div>
-
-        {memos.length > 0 && (
-          <button
-            onClick={handleDeleteAllMemos}
-            className="w-full bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-800 mt-4"
-          >
-            すべてのメモを削除
-          </button>
-        )}
       </aside>
 
       {/* メインコンテンツ */}
@@ -167,6 +174,7 @@ export default function Home() {
           </div>
         )}
       </main>
+        </div>
     </div>
   );
 }
