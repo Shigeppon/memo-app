@@ -67,6 +67,24 @@ export default function Home() {
     );
   };
 
+  // 表示しているメモをファイルに保存する関数
+  const handleSaveMemoToFile = () => {
+    if (!activeMemo) return; // アクティブなメモがない場合は何もしない
+
+    const filename = `${activeMemo.title || "無題のメモ"}.txt`;
+    const content = `タイトル: ${activeMemo.title || "無題のメモ"}\n\n${activeMemo.content}`;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // 表示するアクティブなメモを取得
   const activeMemo = memos.find((memo) => memo.id === activeMemoId);
 
@@ -85,8 +103,7 @@ export default function Home() {
             {memos.map((memo) => (
               <li
                 key={memo.id}
-                className={`p-2 rounded cursor-pointer mb-2 ${memo.id === activeMemoId ? "bg-blue-100" : "hover:bg-gray-200"
-                  }`}
+                className={`p-2 rounded cursor-pointer mb-2 ${memo.id === activeMemoId ? "bg-blue-100" : "hover:bg-gray-200"}`}
                 onClick={() => setActiveMemoId(memo.id)}
               >
                 <div className="flex justify-between items-center">
@@ -120,14 +137,22 @@ export default function Home() {
       <main className="flex-1 p-8">
         {activeMemo ? (
           <div className="flex flex-col h-full">
-            <input
-              type="text"
-              name="title"
-              value={activeMemo.title}
-              onChange={handleMemoChange}
-              placeholder="タイトル"
-              className="text-2xl font-bold p-2 mb-4 bg-white border border-gray-300 rounded text-black"
-            />
+            <div className="flex justify-between items-center mb-4">
+              <input
+                type="text"
+                name="title"
+                value={activeMemo.title}
+                onChange={handleMemoChange}
+                placeholder="タイトル"
+                className="text-2xl font-bold p-2 bg-white border border-gray-300 rounded text-black flex-grow mr-2"
+              />
+              <button
+                onClick={handleSaveMemoToFile}
+                className="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700"
+              >
+                メモを保存
+              </button>
+            </div>
             <textarea
               name="content"
               value={activeMemo.content}

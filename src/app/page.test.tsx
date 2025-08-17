@@ -121,4 +121,74 @@ describe('Home Component', () => {
     // Clean up spy
     confirmSpy.mockRestore();
   });
+
+  test('saves active memo to a file when "メモを保存" button is clicked', () => {
+    // Mock URL methods on window.URL
+    Object.defineProperty(window.URL, 'createObjectURL', {
+      writable: true,
+      value: vi.fn(() => 'blob:mock-url'),
+    });
+    Object.defineProperty(window.URL, 'revokeObjectURL', {
+      writable: true,
+      value: vi.fn(),
+    });
+
+    const createObjectURLSpy = vi.spyOn(window.URL, 'createObjectURL');
+    const revokeObjectURLSpy = vi.spyOn(window.URL, 'revokeObjectURL');
+
+    // Mock HTMLAnchorElement.prototype.click to prevent JSDOM navigation warning
+    const originalAnchorClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = vi.fn(); // Mock the click method
+
+    // Mock document.createElement('a') to return a real anchor element
+    const originalCreateElement = document.createElement; // Save original
+    let mockAnchor: HTMLAnchorElement;
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      if (tagName === 'a') {
+        mockAnchor = originalCreateElement.call(document, 'a') as HTMLAnchorElement; // Call original for 'a'
+        return mockAnchor;
+      }
+      return originalCreateElement.call(document, tagName); // Call original for other tags
+    });
+
+
+    render(<Home />);
+
+    // 1. Create a new memo and set its content
+    const newMemoButton = screen.getByRole('button', { name: /新しいメモ/ });
+    fireEvent.click(newMemoButton);
+
+    const titleInput = screen.getByPlaceholderText('タイトル') as HTMLInputElement;
+    fireEvent.change(titleInput, { target: { value: 'Test Memo Title' } });
+
+    const contentTextarea = screen.getByPlaceholderText('ここにメモを入力してください..') as HTMLTextAreaElement;
+    fireEvent.change(contentTextarea, { target: { value: 'This is the content of the test memo.' } });
+
+    // 2. Click the save button
+    const saveButton = screen.getByRole('button', { name: /メモを保存/ });
+    fireEvent.click(saveButton);
+
+    // 3. Assertions
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(createObjectURLSpy).toHaveBeenCalledWith(expect.any(Blob));
+
+    // Verify Blob content (optional, but good for robustness)
+    const blobArg = createObjectURLSpy.mock.calls[0][0];
+    expect(blobArg.type).toBe('text/plain;charset=utf-8');
+
+    // Assertions for anchor element creation and download
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(mockAnchor.href).toBe('blob:mock-url');
+    expect(mockAnchor.download).toBe('Test Memo Title.txt');
+    expect(mockAnchor.click).toHaveBeenCalledTimes(1); // Assert that the mocked click was called
+
+    expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
+
+    // Clean up spies and restore original methods
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
+    createElementSpy.mockRestore();
+    HTMLAnchorElement.prototype.click = originalAnchorClick; // Restore original click method
+  });
 });
